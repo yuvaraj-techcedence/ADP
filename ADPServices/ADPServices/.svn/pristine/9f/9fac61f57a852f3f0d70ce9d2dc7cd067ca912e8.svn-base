@@ -1,0 +1,5 @@
+org.apache.ws.security.crypto.provider=org.apache.ws.security.components.crypto.Merlin
+org.apache.ws.security.crypto.merlin.keystore.type=JKS
+org.apache.ws.security.crypto.merlin.keystore.password=password
+org.apache.ws.security.crypto.merlin.keystore.alias=iat@vendorxml
+org.apache.ws.security.crypto.merlin.file=Certs/iat/sign2/SOAP_keystore.jks

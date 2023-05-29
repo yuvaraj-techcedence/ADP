@@ -1,0 +1,10 @@
+# To change this template, choose Tools | Templates
+# and open the template in the editor.
+
+SMTP_HOST_NAME=smtp.gmail.com
+SMTP_PORT=465
+SMTP_AUTH_USER=hi5appmsg
+SMTP_AUTH_PWD =hi5apperrmsg
+SSL_FACTORY =javax.net.ssl.SSLSocketFactory
+emailFromAddress =hi5appmsg@gmail.com
+emailList=bala@iserveconsultancy.com, JFCalderin@ZAEPLEX.com

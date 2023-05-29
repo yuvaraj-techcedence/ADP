@@ -1,0 +1,1035 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package Hi5Soft.adp.Transaction;
+
+import java.sql.*;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Scanner;
+import java.util.Date;
+/**
+ *
+ * @author saravanan
+ */
+public class DataBaseHandler {
+
+    Connection conn = null;
+    Statement stmt = null;
+    HashMap<String, String> mMap;
+    ArrayList<HashMap<String, String>> aAList;
+    String currentCountyName, currentStateNAme, reportRequested, category, fullProductID, proDuctName;
+    String currentStateID, reportID;
+    int curID = 0,currentCountyID;
+    private XlsParser xlsParesr;
+    
+  
+
+    public void getStateIDAndCountyID() {
+        System.out.println("CALLED GETTING STATE ID AND FULL ID METHOD");
+        
+        for (int i = aAList.size() - 1; i >= 0; i--) {
+            HashMap<String, String> _map = aAList.get(i);
+                 System.out.println("CALLED ==>"+_map.get("name")+"=="+_map.get("value"));
+            if (_map.get("name").equalsIgnoreCase("attribute2")) {
+                category = _map.get("value");
+                if (_map.get("value").toUpperCase().contains("COUNTY")) {
+                    currentCountyName = aAList.get(i + 1).get("value");
+                    currentStateNAme = aAList.get(i - 1).get("value");
+
+                    getStateID();
+                    getCountyID();
+                    getReportsId();
+                    getFullProductNameAndID();
+                }
+            } else if (_map.get("name").equalsIgnoreCase("attribute5")) {
+                reportRequested = _map.get("value");
+            }
+        }
+
+    }
+
+    void getReportsId() {
+        ResultSet stateResult;
+        try {
+            
+            stmt = conn.createStatement();
+            String query = "select ReportID from reports where ReportName = '" + category + " " + reportRequested + "'";
+             System.out.println("Reports ID Query" + query);
+            stateResult = stmt.executeQuery(query);
+            while (stateResult.next()) {
+                reportID =""+ stateResult.getInt(1);
+            }
+            // conn.close();
+        } catch (Exception e) {
+            System.out.println("Error in getReportsId==>" + e.getMessage());
+        }
+    }
+    void getReportsIDFromFullProductTable(String id)
+{
+      ResultSet stateResult;
+        try {
+            
+            stmt = conn.createStatement();
+            String query = "select reportID from  FULL_Product_Table where FullProductID='"+id+"'";
+            stateResult = stmt.executeQuery(query);
+            while (stateResult.next()) {
+                reportID =""+ stateResult.getInt(1);
+            }
+            // conn.close();
+        } catch (Exception e) {
+            System.out.println("Error in getReportsId==>" + e.getMessage());
+        }
+}
+
+    int getOrderID() {
+        ResultSet stateResult;
+        int orderID = 0;
+        try {
+            stmt = conn.createStatement();
+            String query = "select max(orderID) from order_reports";
+            stateResult = stmt.executeQuery(query);
+            while (stateResult.next()) {
+                orderID = stateResult.getInt(1);
+            }
+            // conn.close();
+
+        } catch (Exception e) {
+            System.out.println("Error in getOrderID ==>" + e.getMessage());
+        }
+        return orderID;
+    }
+
+    void getStateID() {
+
+        ResultSet stateResult;
+        try {
+           
+            String query = "select stateID from States_and_Provinces where StateName = '" + currentStateNAme + "'";
+            stateResult = stmt.executeQuery(query);
+            while (stateResult.next()) {
+                currentStateID =""+ stateResult.getInt(1);
+            }
+            // conn.close();
+
+        } catch (Exception e) {
+            System.out.println("Error in getStateID==>" + e.getMessage());
+        }
+
+    }
+
+    int insertIntoReportCreationTable(int _aliasId, int _orderID, Double _price) {
+        String query = " insert into Order_reports"
+                + "(ReportID,OrderID,ReportFullProductID,ProductName,"
+                + "ReportStatusID,AKA_ID,ReportQAFlag,ReportPrice,ReportCratedDate,"
+                + "IsFCRA,IsCustomerService,Active,Isdeleted,AdverseAction)"
+                + " "
+                + "values (" + reportID + "," + _orderID + ",'" + fullProductID + "',"
+                + "'" + proDuctName + "',"
+                + "11," + _aliasId + ",'NO'," + _price + ",getDate(),"
+                + "'NO','NO','YES','NO','NO') ";
+        ResultSet stateResult;
+        int orderID = 0;
+        try {
+            // stmt = conn.createStatement();
+
+            PreparedStatement pStatment = conn.prepareStatement(query, new String[]{"OrderReportId"});
+            //stateResult=  stmt.executeUpdate(cutomTableInsert);
+            if (pStatment.executeUpdate() >= 1) {
+                stateResult = pStatment.getGeneratedKeys();
+                if (stateResult.next()) {
+                    orderID = stateResult.getInt(1);
+                }
+            }
+            System.out.println("OrderReportId id==>" + orderID);
+            // conn.close();
+
+        } catch (Exception e) {
+            System.out.println("Error in insertIntoReportCreationTable ==>" + e.getMessage());
+        }
+
+        return orderID;
+
+    }
+
+    void insertIntoBackgroundOrderAddresses(int _id) {
+        ResultSet stateResult;
+        int orderID = 0;
+        try {
+            stmt = conn.createStatement();
+            String cutomTableInsert = "insert into Background_Order_Addresses "
+                    + "(OrderId,Street1,Street2,City,State,ZipCode)"
+                    + "values"
+                    + "(" + _id + ",'" + mMap.get("addressLine1") + "','" + mMap.get("addressLine2") + "','" + mMap.get("city") + "','" + mMap.get("state") + "',"
+                    + "'" + mMap.get("zipCode") + "')";
+
+            PreparedStatement pStatment = conn.prepareStatement(cutomTableInsert, new String[]{"OrderId"});
+            //stateResult=  stmt.executeUpdate(cutomTableInsert);
+            if (pStatment.executeUpdate() >= 1) {
+                stateResult = pStatment.getGeneratedKeys();
+                if (stateResult.next()) {
+            System.out.println("order id==>" + orderID);
+                    orderID = stateResult.getInt(1);
+                }
+            }
+            // conn.close();
+
+        } catch (Exception e) {
+            System.out.println("Error in insertIntoBackgroundOrderAddresses ==>" + e.getMessage());
+        }
+
+    }
+
+    void insertInto_ResearcherNotesLOGTable(int _orderID, int _reportID) {
+        ResultSet stateResult;
+        int orderID = 0;
+        try {
+            stmt = conn.createStatement();
+            String cutomTableInsert = "insert into ResearcherNotesLOG(OrderReportId,OrderID,note,createdDateTime) "
+                    + "values(" + _reportID + "," + _orderID + ",'" + mMap.get("productName") + "',getDate())";
+
+            PreparedStatement pStatment = conn.prepareStatement(cutomTableInsert, new String[]{"OrderId"});
+            //stateResult=  stmt.executeUpdate(cutomTableInsert);
+            if (pStatment.executeUpdate() >= 1) {
+                stateResult = pStatment.getGeneratedKeys();
+                if (stateResult.next()) {
+                    orderID = stateResult.getInt(1);
+                }
+            }
+            System.out.println("order id==>" + orderID);
+            // conn.close();
+
+        } catch (Exception e) {
+            System.out.println("Error in insertIntoBackgroundOrderAddresses ==>" + e.getMessage());
+        }
+    }
+
+    int getAliasId(int _orderID) {
+        ResultSet stateResult;
+        int aliasID = 0;
+        try {
+            // stmt = conn.createStatement();
+            String cutomTableInsert = "insert into Background_Alias "
+                    + "(OrderID,AliasLastName,AliasFirstName,AliasMiddleName,"
+                    + "CreatedDate,LastUpdatedDate,Active,IsPrimary,Isdeleted)"
+                    + "values"
+                    + "(" + _orderID + ",'" + mMap.get("lastName") + "',"
+                    + "'" + mMap.get("firstName") + "','" + mMap.get("middleName") + "',getDate(),getdATE(),'YES',1,'NO')";
+
+            PreparedStatement pStatment = conn.prepareStatement(cutomTableInsert, new String[]{"AliasId"});
+            //stateResult=  stmt.executeUpdate(cutomTableInsert);
+            if (pStatment.executeUpdate() >= 1) {
+                stateResult = pStatment.getGeneratedKeys();
+                if (stateResult.next()) {
+                    aliasID = stateResult.getInt(1);
+                }
+            }
+            System.out.println("alais id==>" + aliasID);
+            // conn.close();
+
+        } catch (Exception e) {
+            System.out.println("Error in getAliasId ==>" + e.getMessage());
+        }
+        return aliasID;
+    }
+
+    int insertIntoCustomer_orderTable() {
+        ResultSet stateResult;
+        int orderID = 0;
+         String cutomTableInsert ="";
+        try {
+            // stmt = conn.createStatement();
+           cutomTableInsert = "insert into Customer_Order(CustomerID,ApplicantLastName,ApplicantFirstName,"
+                    + "ApplicantMiddleName,ApplicantDOB,ApplicantSSN,OrderCustomerReferenceNumber)"
+                    + "values (200322,'" + mMap.get("firstName").toString().replace("'","''") + "','" + 
+                   mMap.get("middleName").toString().replace("'","''") + "','"
+                    + mMap.get("lastName").toString().replace("'","''") + "','" + mMap.get("dateOfBirth")
+                    + "','" + mMap.get("ssn") + "','" + mMap.get("sassRefString") + "')";
+            PreparedStatement pStatment = conn.prepareStatement(cutomTableInsert, new String[]{"OrderId"});
+            //stateResult=  stmt.executeUpdate(cutomTableInsert);
+            if (pStatment.executeUpdate() >= 1) {
+                stateResult = pStatment.getGeneratedKeys();
+                if (stateResult.next()) {
+                    orderID = stateResult.getInt(1);
+                }
+            }
+            else
+            {
+         Scanner in = new Scanner(System.in);
+         
+                  System.out.println("Enter a string==>"+cutomTableInsert);
+     String ss = in.nextLine();
+      System.out.println("You entered string "+ss);
+            }
+            System.out.println("order id==>" + orderID);
+            // conn.close();
+
+        } catch (Exception e) {
+            System.out.println("Error in insertIntoCustomer_orderTable ==>" + e.getMessage());
+            Scanner in = new Scanner(System.in);         
+                  System.out.println("Enter a string==>"+cutomTableInsert);
+     String ss = in.nextLine();
+      System.out.println("You entered string "+ss);
+            
+        }
+
+        return orderID;
+    }
+
+    void getFullProductNameAndID() {
+        try {
+            ResultSet countyResultSet;
+            stmt = conn.createStatement();
+            String query = "select FullProductID,ProductName from"
+                    + " FULL_Product_Table"
+                    + " where reportid=" + reportID + " and StateID = " + currentStateID + " and CountyID = " + currentCountyID;
+            System.out.println("FULL PRODUCT ID QUERY ID Query" + query);
+            countyResultSet = stmt.executeQuery(query);
+            while (countyResultSet.next()) {
+                fullProductID = countyResultSet.getString(1);
+                proDuctName = countyResultSet.getString(2);
+            }
+            // conn.close();
+        } catch (Exception ee) {
+            System.out.println("Error in getFullProductNameAndID ==>" + ee.getMessage());
+        } finally {
+
+        }
+    }
+
+    void getCountyID() {
+        try {
+            ResultSet countyResultSet;
+            stmt = conn.createStatement();
+            String query = "select countyId  from US_County_Table where CountyName = '" + currentCountyName + "' and StateID=" + currentStateID;
+            countyResultSet = stmt.executeQuery(query);
+            while (countyResultSet.next()) {
+                currentCountyID = countyResultSet.getInt(1);
+            }
+            // conn.close();
+        } catch (Exception ee) {
+            System.out.println("Error in getting county ID ==>" + ee.getMessage());
+        } finally {
+
+        }
+
+    }
+    
+    
+
+    void connect() {
+        try {
+//System.out.println("START TO CONNECT DATA BASE =========================>");
+
+//VVS-DEVSERVER01\SQL2008R2 local 
+// server TESTMACHINE\\ZAEPLEXONLINE;databaseName=Zaeplex_ADP_Testing;user=sa;password=Zaeplex$2013;
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+//             String connectionUrl = "jdbc:sqlserver://VVS-DEVSERVER01\\SQL2008R2;"
+//                  + "databaseName=Zaeplex_java;user=GaneshKumar;password=Ganesh12#;";  
+            String connectionUrl = "jdbc:sqlserver://2012SQLDEV2\\ZAEPLEXINSTANCE;"
+                 + "databaseName=Zaeplex;user=sa;password=Vivensas$2014;";  
+//             String connectionUrl = "jdbc:sqlserver://TESTMACHINE\\ZAEPLEXONLINE;"
+//                 + "databaseName=Zaeplex_Live_Copy;user=sa;password=Zaeplex$2013;";  
+           // database=Zaeplex; uid=sa; pwd=Vivensas$2014; server=2012SQLDEV2\ZAEPLEXINSTANCE;
+                     //   String localMachineURL = "jdbc:sqlserver://10.10.10.201\\SQL2008R2;"
+               //  + "databaseName=Zaeplex;user=ganeshkumar;password=Ganeshkumar12#;";
+          conn = DriverManager.getConnection(connectionUrl);
+//System.out.println(" CONNECTED DATA BASE =========================>");
+        } catch (Exception e) {
+            System.out.println("exception in database connecti0n ==>" + e.getMessage());
+        }
+    }
+
+    Double getPrice() {
+        Double _price = 0.00;
+        ResultSet result;
+        
+         System.out.println("full priduct id ==>" + fullProductID);
+                 System.out.println("full priduct id ==>" + reportID);
+        try {
+            //option 1 from customer table
+            stmt = conn.createStatement();
+            String query = "select price from Full_Product_Custom_Price where "
+                    + "CustomerID = '200322' and FullProductID='" + fullProductID + "'";
+            
+          
+            
+            result = stmt.executeQuery(query);
+            while (result.next()) {
+                _price = result.getDouble(1);
+            }
+            if (_price != null) {
+                if(_price>0.00)
+                return _price;
+            }
+            // option 2 
+            
+            
+            query ="select price from Report_Custom_Price where CustomerID='200322' and ReportID='"+reportID+"'"; 
+            result = stmt.executeQuery(query);
+            while (result.next()) {
+                _price = result.getDouble(1);
+            }
+            if (_price != null) {
+                  if(_price>0.00)
+                return _price;
+            }
+            // option 3
+            
+            
+             query ="select price from Full_Product_Custom_Price where CustomerGroupID"
+                     + "=(select CustomerGroupID "
+                     + "from Customers where CustomerID='200322') "
+                     + "and  CustomerID is null and FullProductID='"+fullProductID+"'";
+            result = stmt.executeQuery(query);
+            while (result.next()) {
+                _price = result.getDouble(1);
+            }
+            if (_price != null) {
+                  if(_price>0.00)
+                return _price;
+            }
+            // option 4
+             query = "select price from Report_Custom_Price where CustomerGroupID=(select CustomerGroupID "
+                     + "from Customers where CustomerID='200322') "
+                     + "and CustomerID is null "
+                     + "and ReportID='"+reportID+"'";
+            result = stmt.executeQuery(query);
+            while (result.next()) {
+                _price = result.getDouble(1);
+            }
+            if (_price != null) {
+                  if(_price>0.00)
+                return _price;
+            }
+            // option 5
+            
+           
+             query = " select price from FULL_Product_Table where FullProductID='"+fullProductID+"'";
+            result = stmt.executeQuery(query);
+            while (result.next()) {
+                _price = result.getDouble(1);
+            }
+            if (_price != null) {
+                  if(_price>0.00)
+                return _price;
+            }
+            //select * from Reports where ReportID='1031015'
+             query = "select ReportPrice from Reports where ReportID='"+reportID+"'";
+            result = stmt.executeQuery(query);
+            while (result.next()) {
+                _price = result.getDouble(1);
+            }
+            if (_price != null) {
+                  if(_price>0.00)
+                return _price;
+            }
+           
+        } catch (Exception e) {
+ System.out.println("exception in getPrice ==>" + e.getMessage());
+        }
+        return _price;
+    }
+Double getMandatoryCourtFee()
+{
+    try
+    {
+      Double _price = 0.00;
+        ResultSet result;
+        String  query="";
+        if(currentCountyID>=1)
+  query = " select MandatoryCourtFee from FULL_Product_Table where "
+            + "ReportID = '"+reportID+"' and stateID="+currentStateID+" and CountyID ="+currentCountyID;
+        else 
+             query = " select MandatoryCourtFee from FULL_Product_Table where "+
+             "ReportID = '"+reportID+"' and stateID="+currentStateID ;
+            result = stmt.executeQuery(query);
+            while (result.next()) {
+                _price = result.getDouble(1);
+            }
+            if (_price != null) {
+                return _price;
+            }
+    }
+    catch(Exception e)
+    {
+    System.out.println("exception in  getMandatoryCourtFee==>" + e.getMessage());
+    }
+    return 0.00;
+}
+
+void insertIntoCustomerReferenceCodeOrderTable(String _orderId,String _ssStr)
+{
+
+        int aliasID = 0;
+        try {
+            // stmt = conn.createStatement();
+            String cutomTableInsert = "insert into CustomerReferenceCodeOrder "
+                    + "(OrderID,Value1)"
+                    + "values"
+                    + "(" + _orderId + ",'" + _ssStr + "')";
+
+            stmt = conn.createStatement();
+            stmt.execute(cutomTableInsert);
+         
+            // conn.close();
+
+        } catch (Exception e) {
+            System.out.println("Error in insertIntoCustomerReferenceCodeOrderTable ==>" + e.getMessage());
+         Scanner in = new Scanner(System.in);
+                  System.out.println("Error");
+     String ss = in.nextLine();
+      System.out.println("You entered string "+ss);
+        }
+}
+public boolean hasSasStringNo(String _ssNo)
+{
+     ResultSet result;
+     
+      // OrderId  
+     String  query = "select * from CustomerReferenceCodeOrder  where Value1='"+_ssNo+"'";
+     
+     try
+     {
+          stmt = conn.createStatement();
+            result = stmt.executeQuery(query);
+           if(result.next())
+           {
+           return true;
+           }
+           return false;
+     }
+     catch(Exception e)
+     {
+             System.out.println("exception in  check ssreff string==>" + e.getMessage());
+     }
+     return false;
+}
+public void insetINtoTempTable()
+{
+    String query="";
+    String _curentDate="";
+    
+     try {
+       
+    _curentDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime());
+         
+                  query = " insert into ADBDataTempTable (attribute1 ,attribute2 ,attribute3 ,attribute4 ," +
+"attribute5 ,batchDate ,addressLine1 ," +
+"addressLine2 ,city ,state ,zipCode ,dateOfBirth ," +
+"firstName ,lastName ,middleName ,race ,ssn ," +
+"productName ,productGroup ,sassRefString ,createeddate)"+ " values('"+aAList.get(0).get("value")+"','"+aAList.get(1).get("value")+"',"+
+                           "'"+aAList.get(2).get("value")+"','"+aAList.get(3).get("value")+"',"
+                          + "'"+aAList.get(4).get("value")+"',"
+                          + "'"+mMap.get("batchDate")+"','"+mMap.get("addressLine1").toString().replace("'","''")+"',"
+                          + "'"+mMap.get("addressLine2").toString().replace("'","''")+"','"+mMap.get("city").toString().replace("'","''")+"',"
+                          + "'"+mMap.get("state")+"','"+mMap.get("zipCode")+"',"
+                          + "'"+mMap.get("dateOfBirth")+"','"+mMap.get("firstName").toString().replace("'","''")+"',"
+                          + "'"+mMap.get("lastName").toString().replace("'","''")+"','"+mMap.get("middleName").toString().replace("'","''")+"',"
+                          + "'"+mMap.get("race")+"','"+mMap.get("ssn")+"',"
+                          + "'"+mMap.get("productName")+"','"+mMap.get("productGroup")+"','"+mMap.get("sassRefString")+"','"+_curentDate+"')";
+        ResultSet stateResult;
+       //  System.out.println("OrderReportId id==>" + query);
+
+      
+            // stmt = conn.createStatement();
+
+            PreparedStatement pStatment = conn.prepareStatement(query);
+           
+            //stateResult=  stmt.executeUpdate(cutomTableInsert);
+         pStatment.executeUpdate() ;
+              
+            
+           
+            // conn.close();
+
+        } catch (Exception e) {
+            System.out.println("Error in insertInto Table ==>" + e.getMessage()+_curentDate);
+            System.out.println("query===>"+query);
+             //System.out.println("error in ==>"+e.getMessage()); // 
+            Scanner in = new Scanner(System.in);
+                  System.out.println("Enter a string");
+     String ss = in.nextLine();
+      System.out.println("You entered string "+ss);
+        }
+
+}
+     public void upDateReportStatusID(String _ssreffString,String _fName,ErrorLogCreator _err)
+     {
+         try
+         {
+             Date d=new Date();
+             SimpleDateFormat fomat=new SimpleDateFormat("yyyy-MM-dd HH:mm");
+            String strDate= fomat.format(d);
+         String query="update order_reports set ReportStatusID=18,ReportDeliverDateTime='"+strDate+"',DeliveryMethod='"+_fName+"' where orderId in (select orderID from CustomerReferenceCodeOrder where Value1='"+_ssreffString+"')";
+          stmt = conn.createStatement();
+          stmt.executeUpdate(query);
+         }
+         catch(Exception e)
+         {
+             if(_err!=null)
+              _err.createErrorLog("upDateReportStatusID ===>"+e.getMessage());
+         }
+          
+     }
+     
+     public HashMap<String,String>  getDataFormCriminalCaseAdditionalIdentifiersTable(String _criminalCaseID,ErrorLogCreator _errorLogObj)
+     {
+         
+          ResultSet rs;
+     HashMap<String,String>map=new HashMap<String,String>();
+      if(_criminalCaseID!=null)
+     if(_criminalCaseID.length()>=1)
+     {
+    String query="select  StreetAddress,City,State,Zip,EyeColor,HairColor,"
+            + "Height,Race,Weight,Gender from CriminalCaseAdditionalIdentifiers where CriminalCaseID="+_criminalCaseID+"";
+    try
+    {
+    stmt=conn.createStatement();
+    rs=stmt.executeQuery(query);
+    while(rs.next())
+    {
+       
+        map.put("StreetAddress",""+rs.getString(1) );
+        map.put("City",""+rs.getString(2) );
+        map.put("State",""+rs.getString(3) );
+        map.put("Zip",""+rs.getString(4) );
+        map.put("EyeColor",""+rs.getString(5) );
+        map.put("HairColor",""+rs.getString(6) );
+        map.put("Height",""+rs.getString(7) );
+        map.put("Race",""+rs.getString(8) );
+        map.put("Weight",""+rs.getString(9) ); 
+         map.put("Gender",""+rs.getString(10) ); 
+        
+    }
+    }catch(Exception e)
+    {
+        _errorLogObj.createErrorLog("getDataFormCriminalCaseAdditionalIdentifiersTable ===>"+e.getMessage());
+            }
+     }
+    return map;
+     }
+public   ArrayList<HashMap<String,String>> getDataFromCriminalCaseReport(String reportsID,ErrorLogCreator _logObj)
+{
+    
+    ResultSet rs;
+    ArrayList<HashMap<String,String>>data=new ArrayList<HashMap<String,String>>();
+//    String query=""
+//            + ""
+//            + ""
+//            + ""+reportsID+"";
+    
+    String query="select  CriminalCaseID,Source,CaseNumber,CaseFileDate,DOB,firstName,"
+           + "lastName,MiddleName,ssn from CRIMINALCASEREPORT where PublishToCustomer=1 and OrderReportId="+reportsID+"";
+    try
+    {
+    stmt=conn.createStatement();
+    rs=stmt.executeQuery(query);
+    while(rs.next())
+    {
+        HashMap<String,String>map=new HashMap<String,String>();
+        map.put("CriminalCaseID",""+rs.getInt(1) );
+        map.put("Source",""+rs.getString(2) );
+        map.put("CaseNumber",""+rs.getString(3) );
+        map.put("CaseFileDate",""+rs.getString(4) );
+        map.put("DOB",""+rs.getString(5) );
+        map.put("firstName",""+rs.getString(6) );
+        map.put("lastName",""+rs.getString(7) );
+        map.put("MiddleName",""+rs.getString(8) );
+        map.put("ssn",""+rs.getString(9) );     
+        
+        data.add(map);
+        
+    }
+    }
+    catch(Exception e)
+    {
+        _logObj.createErrorLog(e.getMessage());
+            }
+    
+    if(data.size()==0)
+    {
+         HashMap<String,String>map=new HashMap<String,String>();
+        map.put("CriminalCaseID","" );
+        map.put("Source","" );
+        map.put("CaseNumber","" );
+        map.put("CaseFileDate","" );
+        map.put("DOB","" );
+        map.put("firstName","" );
+        map.put("lastName","");
+        map.put("MiddleName","" );
+        map.put("ssn","" );      
+        
+        data.add(map);
+    }
+    return data;
+    
+    
+}
+/**
+ * getting disposition details
+ * @param _detailsID
+ * @return 
+ */
+public String  getDisPosiTionDetails(String _detailsID,ErrorLogCreator _errErrorLogCreator )
+{
+    
+     ResultSet rs;
+     String detailsStr="";
+       if(_detailsID!=null)
+   if(_detailsID.length()>=1)
+   {
+    String query="select Dispositions  from Disposition where DispositionID="+_detailsID+"";
+    try
+    {
+    stmt=conn.createStatement();
+    rs=stmt.executeQuery(query);
+    while(rs.next())
+    {
+       
+        detailsStr=rs.getString("Dispositions");
+    }
+    }
+    catch(Exception e)
+    {
+         System.out.println(" getDisPosiTionDetails  ===>"+e.getMessage());
+         _errErrorLogCreator.createErrorLog(" getDisPosiTionDetails  ===>"+e.getMessage());
+            }
+   }
+    return detailsStr;
+}
+
+public String  getFacilitiesDetails(String _detailsID,ErrorLogCreator _errErrorLogCreator )
+{
+    
+     ResultSet rs;
+     String detailsStr="";
+       if(_detailsID!=null)
+   if(_detailsID.length()>=1)
+   {
+    String query="select FacilityDetails  from Facilities where FacilityID="+_detailsID+"";
+    try
+    {
+    stmt=conn.createStatement();
+    rs=stmt.executeQuery(query);
+    while(rs.next())
+    {
+       
+        detailsStr=rs.getString("FacilityDetails");
+    }
+    }
+    catch(Exception e)
+    {
+         System.out.println(" getFacilitiesDetails  ===>"+e.getMessage());
+         _errErrorLogCreator.createErrorLog(" getFacilitiesDetails  ===>"+e.getMessage());
+            }
+   }
+    return detailsStr;
+}
+public String getChargeLevelID(String _levelID,ErrorLogCreator _errLopg)
+{
+     ResultSet rs;
+     String detailsStr="";
+     if(_levelID!=null)
+   if(_levelID.length()>=1)
+   {
+    String query="select levels from ChargeLevel where levelID="+_levelID;
+    try
+    {
+    stmt=conn.createStatement();
+    rs=stmt.executeQuery(query);
+    while(rs.next())
+    {
+       
+        detailsStr=rs.getString("levels");
+    }
+    }
+    catch(Exception e)
+    {
+         System.out.println(" getChargeLevelID  ===>"+e.getMessage());
+         _errLopg.createErrorLog("getChargeLevelID==>"+e.getMessage());
+            }
+   }
+    return detailsStr;
+}
+
+
+public String getProbationDetails(String _proBationID,ErrorLogCreator _errLopg)
+{
+     ResultSet rs;
+     String detailsStr="";
+     if(_proBationID!=null)
+   if(_proBationID.length()>=1)
+   {
+    String query="select ProbationType from probationDetails where ProbationId="+_proBationID+"";
+    try
+    {
+    stmt=conn.createStatement();
+    rs=stmt.executeQuery(query);
+    while(rs.next())
+    {
+       
+        detailsStr=rs.getString(1);
+    }
+    }
+    catch(Exception e)
+    {
+         System.out.println(" getProbationDetails  ===>"+e.getMessage());
+            _errLopg.createErrorLog("getProbationDetails==>"+e.getMessage());
+            }
+   }
+    return detailsStr;
+}
+public ArrayList<HashMap<String,String>> getDataFromcriminalChargesTable(String _crimnalId,ErrorLogCreator _erroLogObj)
+{
+    System.out.println("Criminal Charges ID===>"+_crimnalId);
+     ResultSet rs;
+    ArrayList<HashMap<String,String>>data=new ArrayList<HashMap<String,String>>();
+      if(_crimnalId!=null)
+    if(_crimnalId.length()>=1)
+    {
+    String query="select AmountSuspended,Cost,Fine,Restitution,ConfinementCreditedDays," +
+" ConfinementCreditedMonths,ConfinementCreditedYears," +
+"ConfinementStayedDays,ConfinementStayedMonths,ConfinementStayedYears," +
+" ConfinementSuspendedDays,ConfinementCreditedMonths,ConfinementCreditedYears,ConfinementFacilityDays," +
+" ConfinementFacilityMonths,ConfinementFacilityYears," +
+" ConfinementSuspendedMonths,ConfinementSuspendedYears," +
+" WarrantStartReason,WarrantStartDate,WarrantEndReason,WarrantEndDate," +
+"FinalDispositionDate,FinalChargeLevel,FinalChargeDegree," +
+"OriginalChargeLevel,OriginalChargeDegree," +
+"FinalDispositionDetails,CostFineRestitutionAmount," +
+"FinalChargeDescription ,FinalDisposition," +
+"probationType,"
+            + "ProBationDays,"
+            + "ProbationsMonths,ProBationYears,"
+            + "Restitution,DispositionPendingNextDate,AdditionalSentenceInformation,ConfinementFacility,OriginalChargeDescription from criminalCharges"
+            + " where CriminalCaseID="+_crimnalId+" and isDeleted='NO'";
+    try
+    {
+    stmt=conn.createStatement();
+    rs=stmt.executeQuery(query);
+     while(rs.next())
+    {
+        HashMap<String,String>map=new HashMap<String,String>();
+        map.put("AmountSuspended",""+rs.getString("AmountSuspended") );
+        map.put("Cost",""+rs.getString("Cost") );
+        map.put("Fine",""+rs.getString("Fine") );
+        map.put("Restitution",""+rs.getString("Restitution") );
+        map.put("ConfinementCreditedDays",""+rs.getString("ConfinementCreditedDays") );
+        map.put("ConfinementCreditedMonths",""+rs.getString("ConfinementCreditedMonths") );
+        map.put("ConfinementCreditedYears",""+rs.getString("ConfinementCreditedYears") );
+        map.put("ConfinementStayedDays",""+rs.getString("ConfinementStayedDays") );
+        map.put("ConfinementStayedMonths",""+rs.getString("ConfinementStayedMonths") );
+        map.put("ConfinementStayedYears",""+rs.getString("ConfinementStayedYears") ); 
+        map.put("ConfinementSuspendedDays",""+rs.getString("ConfinementSuspendedDays") );
+        map.put("ConfinementCreditedMonths",""+rs.getString("ConfinementCreditedMonths") );
+        map.put("ConfinementCreditedYears",""+rs.getString("ConfinementCreditedYears") );        
+        map.put("ConfinementFacilityDays",""+rs.getString("ConfinementFacilityDays") );
+        map.put("ConfinementFacilityMonths",""+rs.getString("ConfinementFacilityMonths") );
+        map.put("ConfinementSuspendedMonths",""+rs.getString("ConfinementSuspendedMonths") );
+        map.put("ConfinementSuspendedYears",""+rs.getString("ConfinementSuspendedYears") );
+        map.put("ConfinementFacilityYears",""+rs.getString("ConfinementFacilityYears") ); 
+        
+        map.put("WarrantStartReason",""+rs.getString("WarrantStartReason") );
+        map.put("WarrantStartDate",""+rs.getString("WarrantStartDate") );
+        map.put("WarrantEndReason",""+rs.getString("WarrantEndReason") );
+        map.put("WarrantEndDate",""+rs.getString("WarrantEndDate") );
+         System.out.println("End Date"+rs.getString("WarrantEndDate"));
+        map.put("FinalDispositionDate",""+rs.getString("FinalDispositionDate") );
+        map.put("FinalChargeLevel",""+rs.getString("FinalChargeLevel") );
+        map.put("FinalChargeDegree",""+rs.getString("FinalChargeDegree") );
+        map.put("OriginalChargeLevel",""+rs.getString("OriginalChargeLevel") );
+        map.put("OriginalChargeDegree",""+rs.getString("OriginalChargeDegree") );
+        map.put("FinalDispositionDetails",""+rs.getString("FinalDispositionDetails") );
+       
+        
+        map.put("CostFineRestitutionAmount",""+rs.getString("CostFineRestitutionAmount") );
+        map.put("FinalChargeDescription",""+rs.getString("FinalChargeDescription") );
+        map.put("FinalDisposition",""+rs.getString("FinalDisposition") );
+        map.put("ProBationType",""+rs.getString("ProBationType") );
+        map.put("ProBationDays",""+rs.getString("ProBationDays") );
+        map.put("ProbationsMonths",""+rs.getString("ProbationsMonths") );
+        map.put("ProBationYears",""+rs.getString("ProBationYears") );
+        map.put("Restitution",""+rs.getString("Restitution") );
+        map.put("AdditionalSentenceInformation",""+rs.getString("AdditionalSentenceInformation") );
+        
+        map.put("DispositionPendingNextDate",""+rs.getString("DispositionPendingNextDate") );
+        map.put("ConfinementFacility",""+rs.getString("ConfinementFacility") ); 
+        map.put("OriginalChargeDescription",""+rs.getString("OriginalChargeDescription") );
+        
+//        map.put("FinalDisposition",""+rs.getString("FinalDisposition") );
+//        map.put("FinalDisposition",""+rs.getString("FinalDisposition") );
+        
+         
+        data.add(map);
+        
+    }
+    }
+    catch(Exception e)
+    {
+                   //Scanner in = new Scanner(System.in);
+                  //System.out.println(" getDataFromcriminalChargesTable  ===>"+e.getMessage());
+        _erroLogObj.createErrorLog("getDataFromcriminalChargesTable ===>"+e.getMessage());
+    // String ss = in.nextLine();
+            }
+    }
+    if(data.size()==0)
+    {
+         HashMap<String,String>map=new HashMap<String,String>();
+        map.put("AmountSuspended","" );
+        map.put("Cost","" );
+        map.put("Fine","" );
+        map.put("Restitution","" );
+        map.put("ConfinementCreditedDays","" );
+        map.put("ConfinementCreditedMonths","" );
+        map.put("ConfinementCreditedYears","" );
+        map.put("ConfinementStayedDays","" );
+        map.put("ConfinementStayedMonths","" );
+        map.put("ConfinementStayedYears","" ); 
+        map.put("ConfinementSuspendedDays","" );
+        map.put("ConfinementCreditedMonths","" );
+        map.put("ConfinementCreditedYears","" );        
+        map.put("ConfinementFacilityDays","" );
+        map.put("ConfinementFacilityMonths","" );
+        map.put("ConfinementSuspendedMonths","");
+        map.put("ConfinementSuspendedYears","" );
+        map.put("ConfinementFacilityYears","" ); 
+        
+        map.put("WarrantStartReason","" );
+        map.put("WarrantStartDate","" );
+        map.put("WarrantEndReason","" );
+        map.put("WarrantEndDate","" );
+         System.out.println("End Date");
+        map.put("FinalDispositionDate","" );
+        map.put("FinalChargeLevel","" );
+        map.put("FinalChargeDegree","" );
+        map.put("OriginalChargeLevel","" );
+        map.put("OriginalChargeDegree","" );
+        map.put("FinalDispositionDetails","" );       
+        
+        map.put("CostFineRestitutionAmount","" );
+        map.put("FinalChargeDescription","" );
+        map.put("FinalDisposition","");
+        map.put("ProBationType","" );
+        map.put("ProBationDays","" );
+        map.put("ProbationsMonths","" );
+        map.put("ProBationYears","");
+        map.put("Restitution","" );
+        map.put("AdditionalSentenceInformation","" );
+        
+        map.put("DispositionPendingNextDate","" );
+        map.put("ConfinementFacility","" );
+//        map.put("FinalDisposition",""+rs.getString("FinalDisposition") );
+//        map.put("FinalDisposition",""+rs.getString("FinalDisposition") );
+        
+         
+        data.add(map);
+    }
+    return data;
+}
+     
+public ResultSet getCriminalHistoryData()
+{
+     ResultSet rs=null;
+     try
+     {            
+
+ String query="select  op.Orderid,op.orderreportid, crc.Value1,op.ReportResult\n" +
+"from \n" +
+"customer_order co inner join Order_reports op on co.orderid=op.orderid \n" +
+"inner join CustomerReferenceCodeOrder crc on crc.OrderID = co.OrderID \n" +
+" where op.ReportStatusID=17 and op.isDeleted='NO' and op.Active='YES' and \n" +
+"co.customerID=200322 and op.ReportResult is not NULL ";
+             stmt = conn.createStatement();
+   rs = stmt.executeQuery(query);
+
+     }
+     catch(Exception e)
+     {
+         System.err.println(""+e.getMessage());
+     }
+
+    return rs;
+}
+
+public void statrtDataBaseHandler(HashMap<String, String> _mMap, ArrayList<HashMap<String, String>> _aList)
+{
+     try {
+           
+            mMap = _mMap;
+            aAList = _aList;
+            insetINtoTempTable();
+            // System.out.println("TRY TO CONNECT DATA BASE ====================================>");
+            
+                
+           /*  if(!hasSasStringNo(mMap.get("sassRefString")))
+             {
+            Double _price = 0.00;
+         xlsParesr=new XlsParser("");
+           System.out.println("sise is mMap==>"+aAList.size());
+        String id=  xlsParesr.getID(aAList.get(0).get("value"),
+             aAList.get(1).get("value"),aAList.get(2).get("value"),
+             aAList.get(3).get("value"),aAList.get(4).get("value"));
+              //  System.out.println("ID IS==>"+id);
+            //  Scanner in = new Scanner(System.in);
+                 //  System.out.println("Enter a string");
+   //  String ss = in.nextLine();
+   //   System.out.println("You entered string "+ss);
+             if(id==null)
+             {  
+                 getStateIDAndCountyID();
+             }
+             else
+             {
+                 if(id.startsWith("R"))
+             {
+                 
+                  getStateIDAndCountyID();
+             }
+                 else
+                 {
+                 // in = new Scanner(System.in);
+                 fullProductID=id;
+                     getReportsIDFromFullProductTable(fullProductID);
+               //  reportID="0";
+                 }
+             }
+            int _orderID = insertIntoCustomer_orderTable();
+                 insertIntoCustomerReferenceCodeOrderTable(""+_orderID, mMap.get("sassRefString"));
+            insertIntoBackgroundOrderAddresses(_orderID);
+            int _aliasID = getAliasId(_orderID);
+            _price = getPrice();
+            _price+=getMandatoryCourtFee();
+            int _orderReportId = insertIntoReportCreationTable(_aliasID, _orderID, _price);
+            insertInto_ResearcherNotesLOGTable(_orderID, _orderReportId);
+             }
+             else
+             {
+                  System.out.println("IT IS ALREADY STORED IN DB ===>"+mMap.get("sassRefString"));
+                  
+             }*/
+        } catch (Exception e) {
+            System.out.println("error in ==>"+e.getMessage()); // 
+//            Scanner in = new Scanner(System.in);
+//                  System.out.println("Enter a string");
+//     String ss = in.nextLine();
+//      System.out.println("You entered string "+ss);
+            
+        }
+        
+        
+}
+    public DataBaseHandler() {
+       
+   connect();
+    }
+}
+//create table tempTable (attribute1 varchar(20),attribute2 varchar(20),attribute3 varchar(20),attribute4 varchar(20),
+//attribute5 varchar(20),batchDate varchar(20),addressLine1 varchar(40),
+//addressLine2 varchar(40),city varchar(20),state varchar(20),zipCode varchar(20),dateOfBirth varchar(20),
+//firstName varchar(20),lastName varchar(20),middleName varchar(20),race varchar(20),ssn varchar(20),
+//productName varchar(20),productGroup varchar(20),sassRefString varchar(20))

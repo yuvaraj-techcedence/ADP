@@ -1,0 +1,385 @@
+<?xml version='1.0' encoding='utf-8'?><wsdl:definitions name="VendorServiceImplService" targetNamespace="https://sassgateway.adp.com/vendorxml/VendorService/v1" xmlns:ns1="http://cxf.apache.org/bindings/xformat" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="https://sassgateway.adp.com/vendorxml/VendorService/v1" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <wsdl:types>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" targetNamespace="https://sassgateway.adp.com/vendorxml/VendorService/v1" xmlns:tns="https://sassgateway.adp.com/vendorxml/VendorService/v1" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="fulfillCriminalHistory" type="tns:fulfillCriminalHistory"></xs:element>
+  <xs:element name="fulfillCriminalHistoryResponse" type="tns:fulfillCriminalHistoryResponse"></xs:element>
+  <xs:element name="getWork" type="tns:getWork"></xs:element>
+  <xs:element name="getWorkResponse" type="tns:getWorkResponse"></xs:element>
+  <xs:element name="ping" type="tns:ping"></xs:element>
+  <xs:element name="pingResponse" type="tns:pingResponse"></xs:element>
+  <xs:complexType name="getWork">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="getWorkRequest" type="tns:messageVendorGetWork"></xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="messageVendorGetWork">
+    <xs:complexContent>
+      <xs:extension base="tns:messageBase">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="existingWork" type="xs:string"></xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="messageBase">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="userId" type="xs:string"></xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="getWorkResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="acknowledgement" type="tns:messageVendorAcknowledgement"></xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="messageVendorAcknowledgement">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="invalidCriminalHistoryResults" nillable="true" type="tns:criminalHistoryResult"></xs:element>
+      <xs:element minOccurs="0" name="overallStatus" type="tns:acknowledgementStatusEnum"></xs:element>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="validCriminalHistoryResults" nillable="true" type="tns:criminalHistoryResult"></xs:element>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="vendorWorks" nillable="true" type="tns:vendorWork"></xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="criminalHistoryResult">
+    <xs:complexContent>
+      <xs:extension base="tns:basePojo">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="cases" nillable="true" type="tns:case"></xs:element>
+          <xs:element minOccurs="0" name="record" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="sassRefString" type="xs:string"></xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="basePojo">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="validationMessages" nillable="true" type="tns:validationMessage"></xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="case">
+    <xs:complexContent>
+      <xs:extension base="tns:basePojo">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="actions" nillable="true" type="tns:action"></xs:element>
+          <xs:element minOccurs="0" name="agencyName" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="alternateId" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="arrestDate" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="caseId" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="caseNum" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="fileDate" type="xs:string"></xs:element>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="offenses" nillable="true" type="tns:offense"></xs:element>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="personAddress" nillable="true" type="tns:address"></xs:element>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="personIdentifiers" nillable="true" type="tns:personIdentifier"></xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="action">
+    <xs:complexContent>
+      <xs:extension base="tns:basePojo">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="actionDate" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="actionId" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="additionalInfo" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="alternateDisposition" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="assessmentAmount" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="assessmentAmountSuspended" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="assessmentCosts" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="assessmentFee" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="assessmentFine" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="assessmentRestitution" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="conditions" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="confinement" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="confinementCredited" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="confinementCreditedDuration" type="tns:criminalHistoryDuration"></xs:element>
+          <xs:element minOccurs="0" name="confinementDuration" type="tns:criminalHistoryDuration"></xs:element>
+          <xs:element minOccurs="0" name="confinementStayed" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="confinementStayedDuration" type="tns:criminalHistoryDuration"></xs:element>
+          <xs:element minOccurs="0" name="confinementSuspendedDuration" type="tns:criminalHistoryDuration"></xs:element>
+          <xs:element minOccurs="0" name="criminalDispositionPhrase" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="nextCourtDate" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="plea" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="releaseDate" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="releaseType" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="supervision" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="supervisionDuration" type="tns:criminalHistoryDuration"></xs:element>
+          <xs:element minOccurs="0" name="warrantEndDate" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="warrantEndReason" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="warrantStartDate" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="warrantStartReason" type="xs:string"></xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="criminalHistoryDuration">
+    <xs:complexContent>
+      <xs:extension base="tns:basePojo">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="days" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="hours" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="months" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="years" type="xs:string"></xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="validationMessage">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="reasonDescription" type="xs:string"></xs:element>
+      <xs:element minOccurs="0" name="reasonType" type="xs:string"></xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="offense">
+    <xs:complexContent>
+      <xs:extension base="tns:basePojo">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="actions" nillable="true" type="tns:action"></xs:element>
+          <xs:element minOccurs="0" name="filingOffenseClassification" type="tns:offenseClassification"></xs:element>
+          <xs:element minOccurs="0" name="finalOffenseClassification" type="tns:offenseClassification"></xs:element>
+          <xs:element minOccurs="0" name="offenseCount" type="xs:int"></xs:element>
+          <xs:element minOccurs="0" name="offenseDate" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="offenseId" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="originalOffenseClassification" type="tns:offenseClassification"></xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="offenseClassification">
+    <xs:complexContent>
+      <xs:extension base="tns:basePojo">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="classLevel" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="offense" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="type" type="xs:string"></xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="address">
+    <xs:complexContent>
+      <xs:extension base="tns:basePojo">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="addressId" type="xs:long"></xs:element>
+          <xs:element minOccurs="0" name="addressLine1" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="addressLine2" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="city" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="state" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="zipCode" type="xs:string"></xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="personIdentifier">
+    <xs:complexContent>
+      <xs:extension base="tns:basePojo">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="dateOfBirth" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="eyeColor" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="firstName" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="gender" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="hairColor" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="height" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="lastName" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="middleName" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="race" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="scars" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="ssn" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="suffix" type="xs:string"></xs:element>
+          <xs:element minOccurs="0" name="weight" type="xs:string"></xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="vendorWork">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="batchDate" type="xs:string"></xs:element>
+      <xs:element minOccurs="0" name="personAddress" type="tns:address"></xs:element>
+      <xs:element minOccurs="0" name="personIdentifier" type="tns:personIdentifier"></xs:element>
+      <xs:element minOccurs="0" name="productInformation" type="tns:productInformation"></xs:element>
+      <xs:element minOccurs="0" name="sassRefString" type="xs:string"></xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="productInformation">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="productAttributes" nillable="true" type="tns:productAttribute"></xs:element>
+      <xs:element minOccurs="0" name="productGroup" type="tns:productGroupEnum"></xs:element>
+      <xs:element minOccurs="0" name="productName" type="xs:string"></xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="productAttribute">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="name" type="xs:string"></xs:element>
+      <xs:element minOccurs="0" name="value" type="xs:string"></xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="fulfillCriminalHistory">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="fulfillCriminalHistoryRequest" type="tns:messageVendorFulfillWork"></xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="messageVendorFulfillWork">
+    <xs:complexContent>
+      <xs:extension base="tns:messageBase">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="amended" type="xs:string"></xs:element>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="criminalHistoryResults" nillable="true" type="tns:criminalHistoryResult"></xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="fulfillCriminalHistoryResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="acknowledgement" type="tns:messageVendorAcknowledgement"></xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ping">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="pingRequest" type="tns:messageVendorPing"></xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="messageVendorPing">
+    <xs:complexContent>
+      <xs:extension base="tns:messageBase">
+        <xs:sequence></xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="pingResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="acknowledgement" type="tns:messageVendorAcknowledgement"></xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="acknowledgementStatusEnum">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="ALL_DATA_RECEIVED"></xs:enumeration>
+      <xs:enumeration value="NO_DATA_RECEIVED"></xs:enumeration>
+      <xs:enumeration value="NO_WORK_AVAILABLE"></xs:enumeration>
+      <xs:enumeration value="PARTIAL_DATA_RECEIVED"></xs:enumeration>
+      <xs:enumeration value="SERVICE_AVAILABLE"></xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="productGroupEnum">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="CH"></xs:enumeration>
+      <xs:enumeration value="RE"></xs:enumeration>
+      <xs:enumeration value="ADV"></xs:enumeration>
+      <xs:enumeration value="AT"></xs:enumeration>
+      <xs:enumeration value="FC"></xs:enumeration>
+      <xs:enumeration value="WC"></xs:enumeration>
+      <xs:enumeration value="LO"></xs:enumeration>
+      <xs:enumeration value="NL"></xs:enumeration>
+      <xs:enumeration value="MV"></xs:enumeration>
+      <xs:enumeration value="CL"></xs:enumeration>
+      <xs:enumeration value="CV"></xs:enumeration>
+      <xs:enumeration value="RC"></xs:enumeration>
+      <xs:enumeration value="BK"></xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="GVXException" type="tns:GVXException"></xs:element>
+  <xs:complexType name="GVXException">
+    <xs:sequence>
+      <xs:element name="reasonCode" nillable="true" type="xs:string"></xs:element>
+      <xs:element name="reasonDescription" nillable="true" type="xs:string"></xs:element>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="invalidCriminalHistoryResults" type="tns:criminalHistoryResult"></xs:element>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+  </wsdl:types>
+  <wsdl:message name="GVXException">
+    <wsdl:part element="tns:GVXException" name="GVXException">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="fulfillCriminalHistoryResponse">
+    <wsdl:part element="tns:fulfillCriminalHistoryResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="ping">
+    <wsdl:part element="tns:ping" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="pingResponse">
+    <wsdl:part element="tns:pingResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="fulfillCriminalHistory">
+    <wsdl:part element="tns:fulfillCriminalHistory" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getWorkResponse">
+    <wsdl:part element="tns:getWorkResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getWork">
+    <wsdl:part element="tns:getWork" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="VendorService">
+    <wsdl:operation name="getWork">
+      <wsdl:input message="tns:getWork" name="getWork">
+    </wsdl:input>
+      <wsdl:output message="tns:getWorkResponse" name="getWorkResponse">
+    </wsdl:output>
+      <wsdl:fault message="tns:GVXException" name="GVXException">
+    </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="fulfillCriminalHistory">
+      <wsdl:input message="tns:fulfillCriminalHistory" name="fulfillCriminalHistory">
+    </wsdl:input>
+      <wsdl:output message="tns:fulfillCriminalHistoryResponse" name="fulfillCriminalHistoryResponse">
+    </wsdl:output>
+      <wsdl:fault message="tns:GVXException" name="GVXException">
+    </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="ping">
+      <wsdl:input message="tns:ping" name="ping">
+    </wsdl:input>
+      <wsdl:output message="tns:pingResponse" name="pingResponse">
+    </wsdl:output>
+      <wsdl:fault message="tns:GVXException" name="GVXException">
+    </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="VendorServiceImplServiceSoapBinding" type="tns:VendorService">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"></soap:binding>
+    <wsdl:operation name="getWork">
+      <soap:operation soapAction="" style="document"></soap:operation>
+      <wsdl:input name="getWork">
+        <soap:body use="literal"></soap:body>
+      </wsdl:input>
+      <wsdl:output name="getWorkResponse">
+        <soap:body use="literal"></soap:body>
+      </wsdl:output>
+      <wsdl:fault name="GVXException">
+        <soap:fault name="GVXException" use="literal"></soap:fault>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="fulfillCriminalHistory">
+      <soap:operation soapAction="" style="document"></soap:operation>
+      <wsdl:input name="fulfillCriminalHistory">
+        <soap:body use="literal"></soap:body>
+      </wsdl:input>
+      <wsdl:output name="fulfillCriminalHistoryResponse">
+        <soap:body use="literal"></soap:body>
+      </wsdl:output>
+      <wsdl:fault name="GVXException">
+        <soap:fault name="GVXException" use="literal"></soap:fault>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="ping">
+      <soap:operation soapAction="" style="document"></soap:operation>
+      <wsdl:input name="ping">
+        <soap:body use="literal"></soap:body>
+      </wsdl:input>
+      <wsdl:output name="pingResponse">
+        <soap:body use="literal"></soap:body>
+      </wsdl:output>
+      <wsdl:fault name="GVXException">
+        <soap:fault name="GVXException" use="literal"></soap:fault>
+      </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="VendorServiceImplService">
+    <wsdl:port binding="tns:VendorServiceImplServiceSoapBinding" name="VendorServiceImplPort">
+      <soap:address location="https://sassgateway.adp.com/vendorxml/VendorService/v1"></soap:address>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
