@@ -1,0 +1,25 @@
+(For windows use cygwin for openssl)
+openssl rsa -in int.adpselect.com.key -out int.adpselect.com.PEM.key -outform PEM
+
+openssl x509 -in int.adpselect.com.cer -out int.adpselect.com.PEM.crt -outform PEM
+
+openssl pkcs12 -export -out keystore.pkcs12 -in int.adpselect.com.PEM.crt -in key int.adpselect.com.PEM.key
+(Will ask for password use password of WS call)
+
+java -classpath . PKCS12Import keystore.pkcs12  keystore.jks
+(Will ask for password use password entered above)
+
+
+(Dest Argument MUST be the Webservice Username!)
+keytool -keyclone -alias 1 -dest PS5BPF53 -keystore keystore.jks
+keytool -list -v -keystore keystore.jks
+
+
+
+
+
+
+
+
+TO TRUST INVALID CERT:
+Download Cert from FIREFOX

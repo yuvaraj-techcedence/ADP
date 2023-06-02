@@ -1,0 +1,5 @@
+save pem
+run Portecle
+open prodkeystore.jks
+delete old certificate
+import pem file from adp

@@ -1,0 +1,15 @@
+#Merlin example
+org.apache.ws.security.crypto.provider=org.apache.ws.security.components.crypto.Merlin
+org.apache.ws.security.crypto.merlin.keystore.type=JKS
+org.apache.ws.security.crypto.merlin.keystore.password=password
+org.apache.ws.security.crypto.merlin.keystore.alias=vendor1@vendorxml
+org.apache.ws.security.crypto.merlin.alias.password=password
+#org.apache.ws.security.crypto.merlin.file=\\\\avsf-fs02\\it projects\\Select4.0\\Ombros P3\\5 - TechnicalDesign\\GVX\\DP Prototype\\SoapUiDIT\\AnuJKS\\signaturekeystoreAnu.jks
+org.apache.ws.security.crypto.merlin.file=Certs/dit/sign2/signaturekeystore.jks
+#JCE example
+org.apache.ws.security.crypto.provider=org.bouncycastle.jce.provider.BouncyCastleProvider
+org.apache.ws.security.crypto.BouncyCastleProvider.keystore.type=BKS
+org.apache.ws.security.crypto.BouncyCastleProvider.keystore.password=password
+org.apache.ws.security.crypto.BouncyCastleProvider.keystore.alias=vendor1@vendorxml
+org.apache.ws.security.crypto.BouncyCastleProvider.alias.password=password
+org.apache.ws.security.crypto.BouncyCastleProvider.file=Certs/dit/sign2/signaturekeystore.jks 
